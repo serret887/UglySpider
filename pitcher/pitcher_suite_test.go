@@ -1,4 +1,4 @@
-package carScrapper_test
+package pitcher_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCarScrapper(t *testing.T) {
+func TestPitcher(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CarScrapper Suite")
+	RunSpecs(t, "Pitcher Suite")
 }

@@ -1,4 +1,4 @@
-package carScrapper_test
+package UglySpider_test
 
 import (
 	. "github.com/onsi/ginkgo"

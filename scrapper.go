@@ -1,4 +1,4 @@
-package carScrapper
+package UglySpider
 
 // Scrapper manage all the workers and set the rules
 // for scrappe
