@@ -5,11 +5,13 @@ import (
 	"strconv"
 )
 
+//Worker methods to manage a pile of workers
 type Worker interface {
 	Start()
 	Close() error
 }
 
+//Job can mock any method that need to be executed
 type Job interface {
 	Execute()
 }
@@ -17,9 +19,8 @@ type Job interface {
 var count int
 
 type worker struct {
-	WorkerName string
-	WorkerPool chan chan *Job
-	//we can change this to an interface that way we can pass anything and execute
+	WorkerName     string
+	WorkerPool     chan chan *Job
 	RequestChannel chan *Job
 	quit           chan chan error
 }
