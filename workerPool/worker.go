@@ -1,9 +1,6 @@
 package workerPool
 
-import (
-	"fmt"
-	"strconv"
-)
+import "fmt"
 
 //Worker methods to manage a pile of workers
 type Worker interface {
@@ -13,25 +10,26 @@ type Worker interface {
 
 //Job can mock any method that need to be executed
 type Job interface {
-	Execute()
+	Execute() error
+	fmt.Stringer
+	GetResult() (interface{}, error)
 }
-
-var count int
 
 type worker struct {
 	WorkerName     string
 	WorkerPool     chan chan *Job
 	RequestChannel chan *Job
+	ResponseChan   chan error
 	quit           chan chan error
 }
 
 // NewWorker return a new minion that will execute any job for you
-func NewWorker(workerPool chan chan *Job) Worker {
-	count++
+func NewWorker(workerPool chan chan *Job, RespChan chan error, name string) Worker {
 	return &worker{
-		WorkerName:     "baby_minion" + strconv.Itoa(count),
+		WorkerName:     name,
 		WorkerPool:     workerPool,
 		RequestChannel: make(chan *Job),
+		ResponseChan:   RespChan,
 		quit:           make(chan chan error),
 	}
 }
@@ -43,12 +41,18 @@ func (w *worker) Start() {
 		var err error
 		for {
 			//Register this worker in to the queue
+
 			w.WorkerPool <- w.RequestChannel
+			fmt.Println("Worker registered")
 			select {
 			case job := <-w.RequestChannel:
 				// in this case we receive a job so we need to execute it
-				fmt.Println("job executing", job)
+				fmt.Println("the job wil be execute")
+
+				err := (*job).Execute()
 				// we need to send the response from job to his own channel
+				fmt.Println("job executed")
+				w.ResponseChan <- err
 			case q := <-w.quit:
 				//this is the stop signal
 				fmt.Println("Stopping the worker")
@@ -62,5 +66,6 @@ func (w *worker) Start() {
 func (w *worker) Close() error {
 	errc := make(chan error)
 	w.quit <- errc
+	fmt.Println(w.WorkerName, "stopped")
 	return <-errc
 }
