@@ -70,6 +70,8 @@ func (jb *jobRequest) SetRequest(request *http.Request) {
 
 func (jb *jobRequest) Execute() error {
 	jb.Response, jb.err = jb.Do(jb.req)
+	jb.req.Cookie("times")
+	fmt.Println("the cookes in the client", jb.Client.Jar.Cookies(jb.req.URL))
 	return jb.err
 }
 
