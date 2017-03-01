@@ -12,7 +12,8 @@ type Worker interface {
 type Job interface {
 	Execute() error
 	fmt.Stringer
-	GetResult() (interface{}, error)
+	//	GetResult() (interface{}, error)
+	Close() error
 }
 
 type worker struct {

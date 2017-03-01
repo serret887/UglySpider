@@ -25,6 +25,10 @@ func (dj *DummyJob) GetResult() (interface{}, error) {
 	return dj.Count, nil
 }
 
+func (dj *DummyJob) Close() error {
+	return nil
+}
+
 var _ = Describe("Worker", func() {
 	Context("Worker Test", func() {
 		It("Worker should execute any type that implement Excute interface", func() {
@@ -34,13 +38,14 @@ var _ = Describe("Worker", func() {
 			var dj workerPool.Job
 			dj = &DummyJob{}
 
-			jobInput := wp.GetJobInput()
 			// assing job to the queue
-			jobInput <- &dj
+			wp.GetJobInput() <- &dj
+
 			resp := <-wp.GetResponse()
 			Expect(resp).To(BeNil())
-
-			Expect(dj.GetResult()).To(Equal(5), "expecting to execute the job")
+			djStruct, ok := dj.(*DummyJob)
+			Expect(ok).To(BeTrue())
+			Expect(djStruct.GetResult()).To(Equal(5), "expecting to execute the job")
 			Expect(dj.String()).To(Equal("DUMMY JOB"), "expectiong to receive the same job that i send")
 			err := wp.Close()
 			Expect(err).To(BeNil())
