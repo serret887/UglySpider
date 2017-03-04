@@ -61,17 +61,27 @@ func (cj *carJobParser) Execute() error {
 	if err != nil {
 		return err
 	}
-	// detail, err := cj.ogleData.Find(cj.Details...)
-	// if err != nil {
-	// 	return err
-	// }
-	// place, err := cj.ogleData.Find(cj.Place...)
-	// if err != nil {
-	// 	return err
-	// }
-	fmt.Print("amount of price in the page", len(price))
+
+	place, err := cj.ogleData.Find(cj.Place...)
+	if err != nil {
+		return err
+	}
+
+	detail, err := cj.ogleData.Find(cj.Details...)
+	if err != nil {
+		return err
+	}
+	fmt.Println("amount of price in the page", len(price))
 	for _, pr := range price {
-		fmt.Print(pr.FirstChild)
+		fmt.Println(pr.FirstChild.Data)
+	}
+	fmt.Println("amount of detail in the page", len(detail))
+	for _, d := range detail {
+		fmt.Println(d.FirstChild.Data)
+	}
+	fmt.Println("amount of places in the page", len(place))
+	for _, d := range place {
+		fmt.Println(d.FirstChild.Data)
 	}
 
 	return nil

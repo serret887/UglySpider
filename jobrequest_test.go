@@ -33,11 +33,11 @@ var _ = Describe("Jobrequest", func() {
 				if err != nil {
 					cookie = &http.Cookie{Name: "times"}
 				}
-				fmt.Println("Request executed")
-				fmt.Println(cookie)
+
 				cookie.Value += "1"
-				fmt.Println(cookie)
+
 				http.SetCookie(w, cookie)
+
 				fmt.Fprint(w, "Hello, client")
 			}))
 
@@ -50,7 +50,7 @@ var _ = Describe("Jobrequest", func() {
 		JustBeforeEach(func() {
 			var err error
 			request, err = http.NewRequest("GET", fakeServer.URL, nil)
-			Expect(err).To(BeNil(), "Should be able to create a Pitcher")
+			Expect(err).To(BeNil(), "Should be able to create a request")
 		})
 
 		It("Will get the correct response from a server", func() {
@@ -75,7 +75,7 @@ var _ = Describe("Jobrequest", func() {
 			rj, err := UglySpider.NewJobRequest(fakeServer.URL)
 			Expect(err).To(BeNil(), "Should be able to create a Request")
 			rj.SetRequest(request)
-			//			runtime.Breakpoint()
+			//runtime.Breakpoint()
 			err = rj.Execute()
 			Expect(err).To(BeNil(), " make a get request without problems")
 			response, err := rj.GetResult()
@@ -86,7 +86,7 @@ var _ = Describe("Jobrequest", func() {
 			Expect(cookies[0].Value).To(Equal("1"), "the name of the cookie should be times")
 
 		})
-		FIt("Will save the cookies passed by the server for all the request", func() {
+		It("Will save the cookies passed by the server for all the request", func() {
 
 			rj, err := UglySpider.NewJobRequest(fakeServer.URL)
 			Expect(err).To(BeNil(), "Should be able to create a Request")
@@ -94,16 +94,67 @@ var _ = Describe("Jobrequest", func() {
 			//			runtime.Breakpoint()
 			err = rj.Execute()
 			err = rj.Execute()
-			err = rj.Execute()
-			err = rj.Execute()
 			Expect(err).To(BeNil(), " make a get request without problems")
 			res, err := rj.GetResult()
 			Expect(err).To(BeNil(), " make a get request without problems")
 			defer res.Body.Close()
 			cookies := res.Cookies()
+			Expect(len(cookies)).To(Equal(1), "only one cookie")
 			Expect(cookies[0].Name).To(Equal("times"), "the name of the cookie should be times")
-			Expect(cookies[0].Value).To(Equal("111"), "the is executed 3 times should have the cookies increase by 3")
+			Expect(cookies[0].Value).To(Equal("11"), "the is executed 3 times should have the cookies increase by 3")
 
+		})
+
+		It("make a request and don't get block", func() {
+			rj, err := UglySpider.NewJobRequest("socks5://127.0.0.1:9050")
+			Expect(err).To(BeNil(), "tor is installed")
+			req, err := http.NewRequest("GET", fakeServer.URL, nil)
+			Expect(err).To(BeNil(), "no errors creating the request")
+			rj.SetRequest(req)
+			rj.Execute()
+			resp, err := rj.GetResult()
+			Expect(err).To(BeNil(), "It should perform the request")
+
+			defer resp.Body.Close()
+			text, err := ioutil.ReadAll(resp.Body)
+			Expect(err).To(BeNil(), "no problem reading the response from the page")
+			Expect(text).NotTo(ContainElement("This IP has been automatically blocked."), "the TOR IP is getting blocked")
+		})
+
+		FIt("making request over without any proxy", func() {
+			rj, err := UglySpider.NewSimpleJobRequest()
+			Expect(err).To(BeNil(), "New Job request without proxy")
+			req, err := http.NewRequest("GET", fakeServer.URL, nil)
+			Expect(err).To(BeNil(), "no errors creating the request")
+			rj.SetRequest(req)
+			rj.Execute()
+			resp, err := rj.GetResult()
+			Expect(err).To(BeNil(), "It should perform the request")
+
+			defer resp.Body.Close()
+			text, err := ioutil.ReadAll(resp.Body)
+			Expect(err).To(BeNil(), "no problem reading the response from the page")
+			Expect(string(text)).To(BeEquivalentTo("Hello, client"), "the response should should be in the body")
+
+		})
+
+		Context("Making integration request over the network to craighlist", func() {
+			FIt("make the request to craiglist", func() {
+				rj, err := UglySpider.NewSimpleJobRequest()
+				Expect(err).To(BeNil(), "New Job request without proxy")
+				req, err := http.NewRequest("GET", "http://www.revolico.com", nil)
+				Expect(err).To(BeNil(), "no errors creating the request")
+				rj.SetRequest(req)
+				rj.Execute()
+				resp, err := rj.GetResult()
+				Expect(err).To(BeNil(), "It should perform the request")
+
+				defer resp.Body.Close()
+				text, err := ioutil.ReadAll(resp.Body)
+				fmt.Println(text)
+				Expect(err).To(BeNil(), "no problem reading the response from the page")
+				Expect(string(text)).To(BeEquivalentTo("Hello, client"), "the response should should be in the body")
+			})
 		})
 
 	})
